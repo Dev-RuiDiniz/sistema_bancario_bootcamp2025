@@ -9,6 +9,7 @@ Funcionalidades:
 Depositar: Adiciona um valor ao saldo.
 Sacar: Retira um valor do saldo, com limites de saque diário e por transação.
 Visualizar Extrato: Mostra todas as movimentações (depósitos e saques) e o saldo atual.
+
 Desafio 02: Sistema Modularizado e Atualizado
 A segunda fase do projeto foca na modularização e na adição de recursos mais complexos. As funcionalidades foram divididas em dois arquivos (banco_funcoes.py e main.py), melhorando a organização e a legibilidade do código. Além disso, foram introduzidos os conceitos de usuários e contas correntes, permitindo que o sistema gerencie múltiplas pessoas e suas respectivas contas.
 
@@ -20,6 +21,7 @@ Criação de Contas Correntes: Vincula uma nova conta corrente a um usuário exi
 Listagem: Novas opções para listar todos os usuários cadastrados e listar todas as contas correntes existentes.
 Melhoria na Interação: As operações de depósito, saque e extrato agora exigem o número da conta, garantindo que a transação seja realizada na conta correta.
 Tratamento de Erros: Implementação de tratamento de exceções para entradas inválidas do usuário.
+
 Desafio 03: Sistema Orientado a Objetos (POO)
 A etapa mais avançada do projeto refatora completamente o sistema para utilizar os princípios da Programação Orientada a Objetos (POO). Essa reestruturação visa aprimorar a organização, reusabilidade, manutenibilidade e escalabilidade do código, modelando as entidades do banco como classes e objetos.
 
