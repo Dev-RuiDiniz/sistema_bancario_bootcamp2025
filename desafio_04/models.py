@@ -8,13 +8,14 @@ class Historico:
 
     @property
     def transacoes(self):
+        # Retorna uma cópia para evitar modificações externas diretas
         return self._transacoes
 
     def adicionar_transacao(self, transacao):
         self._transacoes.append({
             "tipo": transacao.__class__.__name__,
             "valor": transacao.valor,
-            "data": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            "data": datetime.now().strftime("%d/%m/%Y %H:%M:%S"), # Formato com data e hora
         })
 
 
@@ -89,15 +90,33 @@ class Conta(ABC):
 
 
 class ContaCorrente(Conta):
-    def __init__(self, numero, cliente, limite=500, limite_saques=3):
+    def __init__(self, numero, cliente, limite=500, limite_saques=3, limite_operacoes_diarias=10):
         super().__init__(numero, cliente)
         self._limite = limite
         self._limite_saques = limite_saques
         self._saques_realizados_hoje = 0
+        self._limite_operacoes_diarias = limite_operacoes_diarias # Novo atributo
+        self._operacoes_realizadas_hoje = 0 # Novo contador
+        self._ultima_data_operacao = datetime.min.date() # Nova data de controle
 
-    # Aplicação do decorador de log
+    # Método interno para verificar e atualizar o limite de operações diárias
+    def _verificar_limite_operacoes(self):
+        hoje = datetime.now().date()
+        if hoje > self._ultima_data_operacao:
+            self._operacoes_realizadas_hoje = 0 # Reseta o contador para um novo dia
+            self._saques_realizados_hoje = 0 # Reseta também o limite de saques diários
+            self._ultima_data_operacao = hoje
+        
+        if self._operacoes_realizadas_hoje >= self._limite_operacoes_diarias:
+            print(f"\n!!! Operação falhou! Limite de {self._limite_operacoes_diarias} operações diárias atingido para esta conta. !!!")
+            return False
+        return True
+
     @log_transacao
     def sacar(self, valor):
+        if not self._verificar_limite_operacoes(): # Verifica o limite de operações antes de qualquer outra validação
+            return False
+
         saldo = self.saldo
         excedeu_limite = valor > self._limite
         excedeu_saques = self._saques_realizados_hoje >= self._limite_saques
@@ -112,17 +131,21 @@ class ContaCorrente(Conta):
         elif valor > 0:
             self._saldo -= valor
             self._saques_realizados_hoje += 1
+            self._operacoes_realizadas_hoje += 1 # Incrementa o contador de operações diárias
             print("\n=== Saque realizado com sucesso! ===")
             return True
         else:
             print("\n!!! Operação falhou! O valor informado é inválido. !!!")
         return False
 
-    # Aplicação do decorador de log
     @log_transacao
     def depositar(self, valor):
+        if not self._verificar_limite_operacoes(): # Verifica o limite de operações
+            return False
+
         if valor > 0:
             self._saldo += valor
+            self._operacoes_realizadas_hoje += 1 # Incrementa o contador de operações diárias
             print("\n=== Depósito realizado com sucesso! ===")
             return True
         else:
@@ -132,7 +155,8 @@ class ContaCorrente(Conta):
     def __str__(self):
         return (f"Agência:\t{self.agencia}\n"
                 f"C/C:\t\t{self.numero}\n"
-                f"Titular:\t{self.cliente.nome}\n")
+                f"Titular:\t{self.cliente.nome}\n"
+                f"Operações diárias restantes: {self._limite_operacoes_diarias - self._operacoes_realizadas_hoje}\n") # Adiciona info. no str
 
 
 class Cliente:
@@ -146,6 +170,7 @@ class Cliente:
 
     @property
     def contas(self):
+        # Retorna uma cópia para evitar modificações externas diretas
         return self._contas
 
     def adicionar_conta(self, conta):
